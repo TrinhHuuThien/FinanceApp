@@ -1,38 +1,48 @@
-package com.example.appqlchitieu.dao
+package com.example.appqlchitieu.database
 
-import androidx.room.*
-import com.example.appqlchitieu.model.Wallet
-import kotlinx.coroutines.flow.Flow
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.appqlchitieu.dao.*
+import com.example.appqlchitieu.model.*
 
-@Dao
-interface WalletDao {
+@Database(
+    entities = [
+        Expense::class,
+        Category::class,
+        Wallet::class,
+        Budget::class,
+        User::class,
+        AIChat::class
+    ],
+    version = 4,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWallet(wallet: Wallet)
+    abstract fun expenseDao(): ExpenseDao
+    abstract fun categoryDao(): CategoryDao
+    abstract fun walletDao(): WalletDao
+    abstract fun budgetDao(): BudgetDao
+    abstract fun userDao(): UserDao
+    abstract fun aiChatDao(): AIChatDao
 
-    @Update
-    suspend fun updateWallet(wallet: Wallet)
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
 
-    @Delete
-    suspend fun deleteWallet(wallet: Wallet)
-
-    //  Lấy danh sách ví theo user
-    @Query("SELECT * FROM wallet_table WHERE userId = :userId")
-    fun getAllWallets(userId: Int): Flow<List<Wallet>>
-
-    @Query("SELECT * FROM wallet_table WHERE userId = :userId")
-    suspend fun getAllWalletsOnce(userId: Int): List<Wallet>
-
-    // Lấy 1 ví theo id + user
-    @Query("SELECT * FROM wallet_table WHERE userId = :userId AND id = :id LIMIT 1")
-    suspend fun getWalletById(userId: Int, id: Int): Wallet?
-
-    // Update số dư an toàn theo user + delta
-    @Query("""
-        UPDATE wallet_table
-        SET balance = balance + :delta
-        WHERE userId = :userId AND id = :walletId
-    """)
-
-    suspend fun updateBalanceDelta(userId: Int, walletId: Int, delta: Double)
+        fun getInstance(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "app_database"
+                )
+                    .fallbackToDestructiveMigration()   // tránh crash khi tăng version
+                    .build()
+                    .also { INSTANCE = it }
+            }
+        }
+    }
 }
