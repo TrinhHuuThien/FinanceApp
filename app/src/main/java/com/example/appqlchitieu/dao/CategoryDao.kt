@@ -16,13 +16,20 @@ interface CategoryDao {
     @Delete
     suspend fun deleteCategory(category: Category)
 
-    @Query("SELECT * FROM category_table")
-    fun getAllCategories(): Flow<List<Category>>
+    // Lấy tất cả danh mục theo user
+    @Query("SELECT * FROM category_table WHERE userId = :userId")
+    fun getAllCategories(userId: Int): Flow<List<Category>>
 
-    @Query("SELECT * FROM category_table WHERE type = :type")
-    fun getCategoriesByType(type: String): Flow<List<Category>>
-    @Query("SELECT COUNT(*) FROM category_table")
-    suspend fun countAll(): Int
+    @Query("SELECT * FROM category_table WHERE userId = :userId")
+    suspend fun getAllCategoriesOnce(userId: Int): List<Category>
+
+    //  Lấy danh mục theo type + user
+    @Query("SELECT * FROM category_table WHERE userId = :userId AND type = :type")
+    fun getCategoriesByType(userId: Int, type: String): Flow<List<Category>>
+
+    // Đếm danh mục theo user
+    @Query("SELECT COUNT(*) FROM category_table WHERE userId = :userId")
+    suspend fun countAll(userId: Int): Int
 
     @Insert
     suspend fun insertMany(categories: List<Category>)

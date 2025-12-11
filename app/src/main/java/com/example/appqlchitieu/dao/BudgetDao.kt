@@ -9,17 +9,40 @@ interface BudgetDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: Budget)
+
     @Update
     suspend fun updateBudget(budget: Budget)
+
     @Delete
     suspend fun deleteBudget(budget: Budget)
 
-    @Query("SELECT * FROM budget_table")
-    fun getAllBudgets(): Flow<List<Budget>>
+    // ALL budgets theo user
+    @Query("""
+        SELECT * FROM budget_table
+        WHERE userId = :userId
+        ORDER BY startDate DESC
+    """)
+    fun getAllBudgets(userId: Int): Flow<List<Budget>>
 
-    @Query("SELECT * FROM budget_table WHERE categoryId = :categoryId")
-    fun getBudgetsByCategory(categoryId: Int): Flow<List<Budget>>
+    @Query("SELECT * FROM budget_table WHERE userId = :userId")
+    suspend fun getAllBudgetsOnce(userId: Int): List<Budget>
 
-    @Query("SELECT * FROM budget_table WHERE startDate <= :currentDate AND endDate >= :currentDate")
-    fun getActiveBudgets(currentDate: Long): Flow<List<Budget>>
+
+    // budgets theo category + user
+    @Query("""
+        SELECT * FROM budget_table
+        WHERE userId = :userId AND categoryId = :categoryId
+        ORDER BY startDate DESC
+    """)
+    fun getBudgetsByCategory(userId: Int, categoryId: Int): Flow<List<Budget>>
+
+    // budgets còn hiệu lực + user
+    @Query("""
+        SELECT * FROM budget_table
+        WHERE userId = :userId
+          AND startDate <= :currentDate
+          AND endDate >= :currentDate
+        ORDER BY endDate ASC
+    """)
+    fun getActiveBudgets(userId: Int, currentDate: Long): Flow<List<Budget>>
 }

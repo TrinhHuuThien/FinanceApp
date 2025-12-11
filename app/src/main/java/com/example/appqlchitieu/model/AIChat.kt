@@ -1,13 +1,28 @@
-package com.example.appqlchitieu.model
+package com.example.appqlchitieu.database
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import android.content.Context
+import androidx.room.Room
 
-@Entity(tableName = "aichat_table")
-data class AIChat(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val question: String,
-    val response: String,
-    val createdAt: Long = System.currentTimeMillis()
-)
+object DatabaseProvider {
+
+    private const val DB_NAME = "app_database"
+
+    @Volatile
+    private var INSTANCE: AppDatabase? = null
+
+    fun getDatabase(context: Context): AppDatabase {
+        return INSTANCE ?: synchronized(this) {
+            val instance = Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                DB_NAME
+            )
+                .fallbackToDestructiveMigration() //  đổi schema là reset DB luôn
+                .fallbackToDestructiveMigrationOnDowngrade()
+                .build()
+
+            INSTANCE = instance
+            instance
+        }
+    }
+}
