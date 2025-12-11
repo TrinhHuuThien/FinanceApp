@@ -5,6 +5,8 @@ import androidx.room.Room
 
 object DatabaseProvider {
 
+    private const val DB_NAME = "app_database"
+
     @Volatile
     private var INSTANCE: AppDatabase? = null
 
@@ -13,9 +15,10 @@ object DatabaseProvider {
             val instance = Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
-                "expense_manager_db"
+                DB_NAME
             )
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration() // đổi schema là reset DB luôn
+                .fallbackToDestructiveMigrationOnDowngrade()
                 .build()
 
             INSTANCE = instance
