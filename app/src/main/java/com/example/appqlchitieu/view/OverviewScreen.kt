@@ -44,7 +44,7 @@ fun OverviewScreen(
         Column(
             Modifier
                 .fillMaxWidth()
-                .verticalScroll(scroll)   // ⭐️ cho phép cuộn thay vì “nén” nội dung
+                .verticalScroll(scroll)   // cho phép cuộn thay vì “nén” nội dung
         ) {
             // Tổng số dư
             Card(

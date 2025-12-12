@@ -13,7 +13,7 @@ class ExpenseViewModel(
     private val userId: Int
 ) : ViewModel() {
 
-    /** ✅ Danh sách giao dịch của USER hiện tại */
+    /** Danh sách giao dịch của USER hiện tại */
     val allExpenses = repo.allExpenses(userId).asLiveData()
 
     fun insert(expense: Expense) = viewModelScope.launch {
@@ -28,23 +28,23 @@ class ExpenseViewModel(
         repo.delete(expense)
     }
 
-    /** ✅ Lấy 1 giao dịch theo id + user */
+    /** Lấy 1 giao dịch theo id + user */
     suspend fun getById(id: Int) =
         repo.getById(userId, id)
 
-    /** ✅ Lọc theo danh mục + user */
+    /** Lọc theo danh mục + user */
     fun byCategory(categoryId: Int) =
         repo.byCategory(userId, categoryId).asLiveData()
 
-    /** ✅ Lọc theo khoảng ngày + user */
+    /** Lọc theo khoảng ngày + user */
     fun byDateRange(start: Long, end: Long) =
         repo.byDateRange(userId, start, end).asLiveData()
 
-    /** ✅ Tổng chi/thu toàn thời gian theo user */
+    /** Tổng chi/thu toàn thời gian theo user */
     val totalExpense = repo.totalExpense(userId).asLiveData()
     val totalIncome  = repo.totalIncome(userId).asLiveData()
 
-    /** ✅ Tổng chi/thu trong khoảng ngày theo user */
+    /** Tổng chi/thu trong khoảng ngày theo user */
     fun totalExpenseBetween(start: Long, end: Long) =
         repo.totalExpenseBetween(userId, start, end).asLiveData()
 

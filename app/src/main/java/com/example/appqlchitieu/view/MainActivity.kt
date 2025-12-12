@@ -45,7 +45,7 @@ import com.example.appqlchitieu.utils.UserSession
 private enum class TransactionSubScreen { LIST, ADD, UPDATE, CATEGORY, WALLET }
 private enum class OverlayScreen { WALLET, CATEGORY }
 
-// ❗ KHÔNG còn AI button — bỏ hẳn 2 dòng này
+// KHÔNG còn AI button — bỏ hẳn 2 dòng này
 // private val AI_BUTTON_SIZE = 64.dp
 // private val AI_ZONE_HEIGHT = 0.dp
 
@@ -112,12 +112,12 @@ fun MainMenuScreen(
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val context = LocalContext.current
 
-// ✅ Lấy userId từ session
+// Lấy userId từ session
     val sessionManager = remember { SessionManager(context) }
     val userSession = remember { UserSession(sessionManager) }
     val userId = userSession.userIdOrNull()
 
-// ✅ Chặn khi chưa đăng nhập
+// Chặn khi chưa đăng nhập
     if (userId == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Bạn chưa đăng nhập")
@@ -125,7 +125,7 @@ fun MainMenuScreen(
         return
     }
 
-// ✅ Wallet VM theo user
+// Wallet VM theo user
     val db = remember(context) { DatabaseProvider.getDatabase(context) }
     val walletRepo = remember { WalletRepository(db.walletDao()) }
     val walletVM: WalletViewModel = viewModel(factory = WalletViewModelFactory(walletRepo, userId))
@@ -297,7 +297,7 @@ fun MainMenuScreen(
                             4 -> AccountScreen(
                                 userViewModel = userViewModel,
                                 onLogout = {
-                                    // ✅ chắc chắn clear session
+                                    // chắc chắn clear session
                                     sessionManager.logout()
 
                                     navController.navigate("login") {

@@ -89,7 +89,7 @@ fun BudgetScreen(onBack: (() -> Unit)? = null) { // giữ signature cũ nhưng K
                     .padding(inner)
                     .padding(horizontal = 16.dp)
             ) {
-                // ⭐ Chỉ tiêu đề – không còn nút Back
+                // Chỉ tiêu đề – không còn nút Back
                 Text(
                     text = "Ngân sách",
                     style = MaterialTheme.typography.titleLarge,
