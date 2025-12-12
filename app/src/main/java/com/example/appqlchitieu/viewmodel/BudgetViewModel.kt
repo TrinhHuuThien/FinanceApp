@@ -3,37 +3,48 @@ package com.example.appqlchitieu.viewmodel
 import androidx.lifecycle.*
 import com.example.appqlchitieu.model.Budget
 import com.example.appqlchitieu.repository.BudgetRepository
+import com.example.appqlchitieu.utils.SessionManager
+import com.example.appqlchitieu.utils.UserSession
 import kotlinx.coroutines.launch
-import androidx.lifecycle.asLiveData
 
-/**
- * Quản lý ngân sách (Budget) cho UI.
- * Cầu nối giữa UI ↔ Repo: UI không cần biết DAO/Room.
- */
-class BudgetViewModel(private val repo: BudgetRepository) : ViewModel() {
+class BudgetViewModel(
+    private val repo: BudgetRepository,
+    sessionManager: SessionManager
+) : ViewModel() {
 
-    /** Toàn bộ ngân sách (tự cập nhật khi DB đổi) */
-    val allBudgets: LiveData<List<Budget>> = repo.allBudgets.asLiveData()
+    private val userSession = UserSession(sessionManager)
 
-    fun insert(budget: Budget) = viewModelScope.launch { repo.insert(budget) }
-    fun update(budget: Budget) = viewModelScope.launch { repo.update(budget) }
-    fun delete(budget: Budget) = viewModelScope.launch { repo.delete(budget) }
+    private val _userId = MutableLiveData<Int?>().apply {
+        value = userSession.userIdOrNull()
+    }
 
-    /** Ngân sách theo danh mục (VD: Ăn uống) */
-    fun byCategory(categoryId: Int) = repo.byCategory(categoryId).asLiveData()
+    val allBudgets: LiveData<List<Budget>> =
+        _userId.switchMap { uid ->
+            if (uid != null && uid > 0) repo.allBudgets(uid).asLiveData()
+            else MutableLiveData(emptyList())
+        }
 
-    /** Ngân sách đang hiệu lực ngay bây giờ */
-    fun activeNow() = repo.activeAt(System.currentTimeMillis()).asLiveData()
+    fun byCategory(categoryId: Int): LiveData<List<Budget>> {
+        val uid = _userId.value ?: -1
+        return if (uid > 0) repo.byCategory(uid, categoryId).asLiveData()
+        else MutableLiveData(emptyList())
+    }
 
-    /** Ngân sách đang hiệu lực tại 1 thời điểm tuỳ ý (timestamp millis) */
-    fun activeAt(ts: Long) = repo.activeAt(ts).asLiveData()
+    fun activeNow(): LiveData<List<Budget>> {
+        val uid = _userId.value ?: -1
+        return if (uid > 0) repo.activeAt(uid, System.currentTimeMillis()).asLiveData()
+        else MutableLiveData(emptyList())
+    }
 }
 
-class BudgetViewModelFactory(private val repo: BudgetRepository) : ViewModelProvider.Factory {
+class BudgetViewModelFactory(
+    private val repo: BudgetRepository,
+    private val sessionManager: SessionManager
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(BudgetViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return BudgetViewModel(repo) as T
+            return BudgetViewModel(repo, sessionManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
